@@ -1,0 +1,84 @@
+---
+startmem: 256m
+maxmem: 1028m 
+wildfly_dir: /dados/wildfly
+wildfly_home: /dados/wildfly
+wildfly_Final: wildfly-11.0.0.Final.zip
+wildfly_Final_dir: wildfly-11.0.0.Final 
+wildfly_user: wildfly
+enable_wildfly: false
+enable_wildfly_drivers: false
+wildfly_group: wildfly
+wildfly_management_users:
+        - { user: 'unicred', password_unicred: '{{ vault_password_unicred }}' }
+user: unicred
+password_unicred: "{{ vault_password_unicred }}"
+sql_driver: sqljdbc_6.2.2.0_enu.tar.gz
+mysql_driver: mysql-connector-java-5.1.43.tar.gz
+postgres_driver: postgresql-42.1.4.jar
+sql_driver_jar: mssql-jdbc-6.2.2.jre8.jar
+
+
+firewalld_disabled: false
+
+firewalld_rules:
+      ssh:
+        port: 22
+        protocol: tcp
+        state: enabled
+        zone: public
+        permanent: true
+      postgres:
+        port: 5432
+        protocol: tcp
+        state: enabled
+        zone: public
+        permanent: true
+      https:
+        port: 443
+        protocol: tcp
+        state: enabled
+        zone: public
+        permanent: true
+      nfs:
+        port: 2049
+        protocol: tcp
+        state: enabled
+        zone: public
+        permanent: true
+      nfsudp:
+        port: 2049
+        protocol: udp
+        state: enabled
+        zone: public
+        permanent: true
+      nfsmountd:
+        port: 20048
+        protocol: tcp
+        state: enabled
+        zone: public
+        permanent: true
+      nfsmountdudp:
+        port: 20048
+        protocol: udp
+        state: enabled
+        zone: public
+        permanent: true
+      rpc:
+        port: 111
+        protocol: tcp
+        state: enabled
+        zone: public
+        permanent: true
+      rpcudp:
+        port: 111
+        protocol: udp
+        state: enabled
+        zone: public
+        permanent: true
+      wildfly:
+        port: 9990
+        protocol: tcp
+        state: enabled
+        zone: public
+        permanent: true

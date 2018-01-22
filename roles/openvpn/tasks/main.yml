@@ -1,0 +1,102 @@
+---
+- name: Install Packages from  Repo
+  yum: name={{ item} state=present
+  with_items:
+    - epel-release
+    - openvpn 
+    - easy-rsa
+    - iptables-services
+  tags:
+    - openvpn
+ 
+- name: create directory | etc/wildfly
+  template: src=server.conf.j2 dest=/etc/openvpn/server.conf  
+  tags:
+    - openvpn
+
+- name: Change Group user openvpn
+  shell:
+       >
+       usermod openvpn -g nobody -G nobody
+
+- name:  Generate key and Certificates
+  ile: path=/etc/openvpn/easy-rsa/keys state=directory
+  tags:
+    - openvpn
+
+- name: Copy files
+  shell:
+       >
+       cp -rf /usr/share/easy-rsa/2.0/* /etc/openvpn/easy-rsa && touch /etc/openvpn/easy-rsa/file.copied
+  args:
+    creates###################################: /etc/openvpn/easy-rsa/file.copied
+
+
+- name: create wildfly Config
+  template: src=wildfly.conf.j2 dest=/etc/wildfly/wildfly.conf  owner=wildfly group=wildfly
+  tags:
+    - wildfly
+
+- name: create wildfly service
+  template: src=wildfly.service.j2 dest=/etc/systemd/system/wildfly.service 
+  tags: 
+    - wildfly
+
+- name: create wildfly bin
+  template: src=launch.sh.j2 dest={{ wildfly_dir }}/bin/launch.sh  mode=755 owner=wildfly group=wildfly
+  tags: 
+    - wildfly 
+
+- name:  Start and Enable wildfly
+  service: name=wildfly  state=started  enabled=yes
+
+- name: Create management users
+  shell: >
+       {{ wildfly_dir }}/bin/add-user.sh -u {{ item.user }} {{ item.password_unicred }} -s -e && touch {{ wildfly_dir }}/standalone/configuration/.mgmt-users.{{ item.user }}.provisioned
+  with_items: "{{ wildfly_management_users }}"
+  no_log: true
+  #become: True
+  #become_user: '{{ wildfly_user }}'
+  args:
+    creates: "{{ wildfly_dir }}/standalone/configuration/.mgmt-users.{{ item.user }}.provisioned"
+  when: wildfly_management_users | length > 0
+  #no_log: True
+  tags:
+    - wildfly
+
+- name: Enforce secure permissions on password files
+  file:
+    path: "{{ wildfly_dir }}/standalone/configuration/{{ item }}"
+    owner: "{{ wildfly_user }}"
+    group: "{{ wildfly_group }}"
+    mode: "0600"
+  with_items:
+    - mgmt-groups.properties
+    - mgmt-users.properties
+  tags:
+    - wildfly
+
+- name: Enforce secure permissions on password files
+  file:
+    path: "{{ wildfly_dir }}/domain/configuration/{{ item }}"
+    owner: "{{ wildfly_user }}"
+    group: "{{ wildfly_group }}"
+    mode: "0600"
+  with_items:
+    - mgmt-groups.properties
+    - mgmt-users.properties
+
+  tags:
+    - wildfly
+
+- name: Install Drivers JBDC
+  include: drivers.yml
+  when: enable_wildfly_drivers
+  tags:
+    - wildfly  
+
+- name: Copy  standalone.conf
+  template: src=standalone.conf.j2 dest={{ wildfly_dir }}/bin/standalone.conf owner=wildfly group=wildfly
+  notify: restart wildfly
+  tags:
+    - wildfly

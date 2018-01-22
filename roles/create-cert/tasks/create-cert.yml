@@ -1,0 +1,41 @@
+- name: Create DH
+  shell:
+       >
+       openssl dhparam -out /etc/openvpn/dh.pem 2048; 
+  args:
+    creates: /tmp/dh.created
+
+- name: Generate key CA
+  shell:
+       >
+       openssl genrsa -out /etc/openvpn/ca.key 2048; chmod 600 /etc/openvpn/ca.key
+
+- name: Generate CSR
+  shell:
+       >
+       openssl req -new -key /etc/openvpn/ca.key -out /etc/openvpn/ca.csr -subj /CN=OpenVPN-CA/
+
+- name: Generate CA Certificate
+  shell:
+       >
+       openssl x509 -req -in /etc/openvpn/ca.csr -out /etc/openvpn/ca.crt -signkey /etc/openvpn/ca.key -days 3650; echo 01 > /etc/openvpn/ca.srl
+
+
+- name: Generate key server
+  shell:
+       >
+       openssl genrsa -out /etc/openvpn/server.key 2048 ; chmod 600 /etc/openvpn/server.key
+
+- name: Genereate CSR server
+  shell:
+       >
+       openssl req -new -key /etc/openvpn/server.key -out /etc/openvpn/server.csr -subj /CN=OpenVPN/
+
+
+- name: Generate Certificate server
+  shell:
+       >
+       openssl x509 -req -in /etc/openvpn/server.csr -out /etc/openvpn/server.crt -CA /etc/openvpn/ca.crt -CAkey /etc/openvpn/ca.key -days 3650
+
+
+  
