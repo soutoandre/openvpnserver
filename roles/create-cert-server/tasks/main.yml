@@ -1,0 +1,41 @@
+- name: Create directory Server
+  file: path=/etc/openvpn/server state=directory
+
+- name: Create DH
+  command: openssl dhparam -out /etc/openvpn/server/dh.pem 4096; 
+  args:
+    creates: /etc/openvpn/server/dh.pem
+
+- name: Generate key CA
+  command:  openssl genrsa -out /etc/openvpn/server/ca.key 4096
+  args:
+    creates: /etc/openvpn/server/ca.key
+
+- name: Generate CSR
+  command:  openssl req -new -key /etc/openvpn/server/ca.key -out /etc/openvpn/server/ca.csr -subj /CN=OpenVPN-CA/
+  args:
+    creates: /etc/openvpn/server/ca.key
+
+- name: Generate CA Certificate
+  command:  openssl x509 -req -in /etc/openvpn/server/ca.csr -out /etc/openvpn/server/ca.crt -signkey /etc/openvpn/server/ca.key -days 3650; echo 01 > /etc/openvpn/ca.srl
+
+
+- name: Generate key server
+  command:  openssl genrsa -out /etc/openvpn/server/server.key 2048 
+  args:
+    creates: /etc/openvpn/server/server.key
+
+- name: Genereate CSR server
+  command:  openssl req -new -key /etc/openvpn/server/server.key -out /etc/openvpn/server/server.csr -subj /CN=OpenVPN/
+  args:
+    creates: /etc/openvpn/server/server.csr
+
+
+- name: Generate Certificate server
+  command: openssl x509 -req -in /etc/openvpn/server/server.csr -out /etc/openvpn/server/server.crt \
+           -CA /etc/openvpn/server/ca.crt -CAkey /etc/openvpn/server/ca.key -days 3650
+  args:
+    creates: /etc/openvpn/server/server.crt
+
+
+  

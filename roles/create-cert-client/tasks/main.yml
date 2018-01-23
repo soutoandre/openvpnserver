@@ -1,0 +1,19 @@
+- name: Create directory client
+  file: path=/etc/openvpn/client  state=directory
+  
+- name: Create key client
+  command: openssl genrsa -out /etc/openvpn/client/{{ name_client }}.key 4096
+  args:
+    creates: /etc/openvpn/client/{{ name_client }}.key
+
+- name: Create CSR client
+  command: openssl req -new -key /etc/openvpn/client/{{ name_client }}.key -out /etc/openvpn/client/{{ name_client }}.csr -subj /CN=OpenVPN-Client/
+  args:
+    creates: /etc/openvpn/client/{{ name_client }}.csr
+
+
+- name: Create Certificate client and sign with CA
+  command: openssl x509 -req -in /etc/openvpn/client/{{ name_client }}.csr \
+     -out /etc/openvpn/client/{{ name_client }}.crt -CA /etc/openvpn/server/ca.crt -CAkey /etc/openvpn/server/ca.key -days 36525
+  args:
+    creates: /etc/openvpn/{{ name_client }}.crt
