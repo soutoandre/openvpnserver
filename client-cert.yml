@@ -3,7 +3,7 @@
   hosts: "openvpn"
   remote_user: ansible
   roles: 
-     - openvpn
+     - create-cert-client
 
   environment:
      http_proxy: "http://192.168.0.20:8080" 
