@@ -1,4 +1,2 @@
-# WILDFLY
-
 #  Under construction
 # openvpnserver
