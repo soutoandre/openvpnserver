@@ -1,27 +1,33 @@
+- name: Install Openssl
+  yum: name=openssl state=present
+
 - name: Create directory Server
-  file: path=/etc/openvpn/server state=directory
+  file: path=/etc/openvpn/server state=directory owner=openvpn group=openvpn
 
 - name: Create DH
-  command: openssl dhparam -out /etc/openvpn/server/dh.pem 4096; 
+  command: openssl dhparam -out /etc/openvpn/server/dh.pem 2048
   args:
     creates: /etc/openvpn/server/dh.pem
 
 - name: Generate key CA
-  command:  openssl genrsa -out /etc/openvpn/server/ca.key 4096
+  command:  openssl genrsa -out /etc/openvpn/server/ca.key 2048
   args:
     creates: /etc/openvpn/server/ca.key
 
 - name: Generate CSR
   command:  openssl req -new -key /etc/openvpn/server/ca.key -out /etc/openvpn/server/ca.csr -subj /CN=OpenVPN-CA/
   args:
-    creates: /etc/openvpn/server/ca.key
+    creates: /etc/openvpn/server/ca.csr
+
+- name: Create Ca.SRL
+  shell: echo 01 > /etc/openvpn/server/ca.srl
 
 - name: Generate CA Certificate
-  command:  openssl x509 -req -in /etc/openvpn/server/ca.csr -out /etc/openvpn/server/ca.crt -signkey /etc/openvpn/server/ca.key -days 3650; echo 01 > /etc/openvpn/ca.srl
+  command:  openssl x509 -req -in /etc/openvpn/server/ca.csr -out /etc/openvpn/server/ca.crt -signkey /etc/openvpn/server/ca.key -days 3650
 
 
 - name: Generate key server
-  command:  openssl genrsa -out /etc/openvpn/server/server.key 2048 
+  command:  openssl genrsa -out /etc/openvpn/server/server.key 2048 ; chmod 600 /etc/openvpn/server/server.key 2048 
   args:
     creates: /etc/openvpn/server/server.key
 

@@ -1,6 +1,6 @@
 ---
 - name: Install Packages from  Repo
-  yum: name={{ item} state=present
+  yum: name={{ item }} state=present
   with_items:
     - epel-release
     - openvpn 
@@ -9,20 +9,20 @@
   tags:
     - openvpn
 
-- name: Change Group user openvpn
-  shell:
-       >
-       usermod openvpn -g nobody -G nobody
+- name: Create directory Server
+  file: path=/etc/openvpn/server state=directory owner=openvpn group=openvpn      
 
+- name: Create directory Client
+  file: path=/etc/openvpn/client state=directory owner=openvpn group=openvpn
  
-- name: create directory | etc/wildfly
-  template: src=server.conf.j2 dest=/etc/openvpn/server.conf  
+- name: Template of config server
+  template: src=server.conf.j2 dest=/etc/openvpn/server.conf mode=600 group=openvpn owner=openvpn 
   notify: restart openvpn
   tags:
     - openvpn
 
 - name:  Start and Enable OpenVpn
-  service: name=openvpn  state=started  enabled=yes
+  service: name=openvpn@server  state=started  enabled=yes
   tags:
     - openvpn
 
@@ -36,9 +36,9 @@
 - name: Masquerade
   iptables:
     table: nat
-    chain: postrouting
-    source:  10.1.1.0/24
-    out_interface:  eth0
-    jump: masquerade
+    chain: POSTROUTING
+    source:  10.0.2.0/24
+    out_interface:  enp0s3
+    jump: MASQUERADE
   tags:
     - openvpn

@@ -2,10 +2,11 @@
 - name: Provision openvpn
   hosts: "openvpn"
   remote_user: ansible
+  become: yes
   roles: 
      - openvpn
 
-  environment:
-     http_proxy: "http://192.168.0.20:8080" 
-     https_proxy: "http://192.168.0.20:8080"
-     no_proxy: "127.0.0.1, localhost" 
+ #environment:
+   #http_proxy: "http://192.168.0.20:8080" 
+   #https_proxy: "http://192.168.0.20:8080"
+   #no_proxy: "127.0.0.1, localhost" 
