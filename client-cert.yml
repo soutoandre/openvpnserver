@@ -2,6 +2,7 @@
 - name: Provision openvpn
   hosts: "openvpn"
   remote_user: ansible
+  become: yes
   roles: 
      - create-cert-client
 

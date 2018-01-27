@@ -1,8 +1,9 @@
+---
 - name: Create directory client
-  file: path=/etc/openvpn/client  state=directory
+  file: path=/etc/openvpn/client state=directory
   
 - name: Create key client
-  command: openssl genrsa -out /etc/openvpn/client/{{ name_client }}.key 4096
+  command: openssl genrsa -out /etc/openvpn/client/{{ name_client }}.key 2048
   args:
     creates: /etc/openvpn/client/{{ name_client }}.key
 
